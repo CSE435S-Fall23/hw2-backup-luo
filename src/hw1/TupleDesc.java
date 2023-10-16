@@ -6,9 +6,9 @@ import java.util.*;
  */
 public class TupleDesc {
 
-	private Type[] types;
-	private String[] fields;
-	
+    private Type[] types;
+    private String[] fields;
+
     /**
      * Create a new TupleDesc with typeAr.length fields with fields of the
      * specified types, with associated named fields.
@@ -18,7 +18,9 @@ public class TupleDesc {
      * @param fieldAr array specifying the names of the fields. Note that names may be null.
      */
     public TupleDesc(Type[] typeAr, String[] fieldAr) {
-    	//your code here
+        //your code here
+        this.types = typeAr;
+        this.fields = fieldAr;
     }
 
     /**
@@ -26,7 +28,7 @@ public class TupleDesc {
      */
     public int numFields() {
         //your code here
-    	return 0;
+        return this.fields.length;
     }
 
     /**
@@ -38,7 +40,11 @@ public class TupleDesc {
      */
     public String getFieldName(int i) throws NoSuchElementException {
         //your code here
-    	return null;
+        try {
+            return fields[i];
+        }catch(NullPointerException e) {
+            throw new NoSuchElementException("Not a valid field reference.");
+        }
     }
 
     /**
@@ -50,7 +56,16 @@ public class TupleDesc {
      */
     public int nameToId(String name) throws NoSuchElementException {
         //your code here
-    	return 0;
+        try {
+            for (int i = 0; i <= this.numFields(); i++) {
+                if (name.equals(this.fields[i]))
+                    return i;
+            }
+        }catch(Exception e) {
+            throw new NoSuchElementException("not field with a matching name is found.");
+        }
+
+        return -1;
     }
 
     /**
@@ -62,7 +77,11 @@ public class TupleDesc {
      */
     public Type getType(int i) throws NoSuchElementException {
         //your code here
-    	return null;
+        try {
+            return this.types[i];
+        }catch(NoSuchElementException e) {
+            throw new NoSuchElementException ("not a valid field reference.");
+        }
     }
 
     /**
@@ -70,8 +89,17 @@ public class TupleDesc {
      * Note that tuples from a given TupleDesc are of a fixed size.
      */
     public int getSize() {
-    	//your code here
-    	return 0;
+        //your code here
+        int size = 0;
+        for (int i = 0; i < this.numFields(); i++) {
+            if(types[i].equals(Type.INT)) {
+                size += 4;
+            }
+            else {
+                size += 129;
+            }
+        }
+        return size;
     }
 
     /**
@@ -83,10 +111,20 @@ public class TupleDesc {
      * @return true if the object is equal to this TupleDesc.
      */
     public boolean equals(Object o) {
-    	//your code here
-    	return false;
+        //your code here
+        TupleDesc t = TupleDesc.class.cast(o);
+        if (types.length == t. types.length && fields.length == t.fields.length) {
+            for(int i = 0; i < types.length; i++) {
+                if (types[i] != t.types[i]){
+                    return false;
+                }
+            }
+        }else {
+            return false;
+        }
+        return true;
     }
-    
+
 
     public int hashCode() {
         // If you want to use TupleDesc as keys for HashMap, implement this so
@@ -102,6 +140,15 @@ public class TupleDesc {
      */
     public String toString() {
         //your code here
-    	return "";
+        String strDesc = "";
+        for(int i = 0; i < fields.length; i++)
+        {
+            strDesc += types[i].toString() + "(" + fields[i] + "), ";
+            if(i != fields.length - 1)
+            {
+                strDesc += ",";
+            }
+        }
+        return strDesc;
     }
 }

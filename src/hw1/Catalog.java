@@ -15,13 +15,31 @@ import java.util.*;
  */
 
 public class Catalog {
-	
+
+    private class Table{
+        HeapFile file;
+        String name;
+        String primaryKey;
+
+
+        public Table(HeapFile file, String name, String primaryKey) {
+            this.file = file;
+            this.name = name;
+            this.primaryKey = primaryKey;
+        }
+    }
+
+    private HashMap<String, Table> namap;
+    private HashMap<Integer, Table> idmap;
+
     /**
      * Constructor.
      * Creates a new, empty catalog.
      */
     public Catalog() {
-    	//your code here
+        //your code here
+        this.idmap = new HashMap<Integer, Table>();
+        this.namap = new HashMap<String, Table>();
     }
 
     /**
@@ -33,7 +51,11 @@ public class Catalog {
      * @param pkeyField the name of the primary key field
      */
     public void addTable(HeapFile file, String name, String pkeyField) {
-    	//your code here
+        //your code here
+        Table table = new Table(file, name, pkeyField);
+        int id = file.getId();
+        namap.put(name,table);
+        idmap.put(id, table);
     }
 
     public void addTable(HeapFile file, String name) {
@@ -45,8 +67,13 @@ public class Catalog {
      * @throws NoSuchElementException if the table doesn't exist
      */
     public int getTableId(String name) {
-    	//your code here
-    	return 0;
+        //your code here
+        //return namap.get(name).file.getId();
+        try {
+            return namap.get(name).file.getId();
+        }catch(Exception e) {
+            throw new NoSuchElementException();
+        }
     }
 
     /**
@@ -55,8 +82,21 @@ public class Catalog {
      *     function passed to addTable
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
-    	//your code here
-    	return null;
+        //your code here
+
+        //return idmap.get(tableid).file.getTupleDesc();
+
+        //try {
+        //	return idmap.get(tableid).file.getTupleDesc();
+        //}catch(Exception e) {
+        //	throw new NoSuchElementException();
+        //}
+
+        if (!idmap.containsKey(tableid) || idmap.get(tableid).file == null) {
+            throw new NoSuchElementException("Table ID not found or TupleDesc is null");
+        }
+
+        return idmap.get(tableid).file.getTupleDesc();
     }
 
     /**
@@ -66,30 +106,36 @@ public class Catalog {
      *     function passed to addTable
      */
     public HeapFile getDbFile(int tableid) throws NoSuchElementException {
-    	//your code here
-    	return null;
+        //your code here
+        try{
+            return idmap.get(tableid).file;
+        }catch(Exception e) {
+            throw new NoSuchElementException();
+        }
     }
 
     /** Delete all tables from the catalog */
     public void clear() {
-    	//your code here
+        //your code here
+        idmap.clear();
+        namap.clear();
     }
 
     public String getPrimaryKey(int tableid) {
-    	//your code here
-    	return null;
+        //your code here
+        return idmap.get(tableid).primaryKey;
     }
 
     public Iterator<Integer> tableIdIterator() {
-    	//your code here
-    	return null;
+        //your code here
+        return idmap.keySet().iterator();
     }
 
     public String getTableName(int id) {
-    	//your code here
-    	return null;
+        //your code here
+        return idmap.get(id).name;
     }
-    
+
     /**
      * Reads the schema from a file and creates the appropriate tables in the database.
      * @param catalogFile

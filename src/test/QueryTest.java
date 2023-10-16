@@ -101,5 +101,46 @@ public class QueryTest {
 		assertTrue(r.getTuples().size() == 8);
 		assertTrue(r.getDesc().getSize() == 8);
 	}
-	
+
+	@Test
+	public void testAs() {
+		Query q = new Query("SELECT a1 AS column1, a2 AS column2 FROM A");
+		Relation r = q.execute();
+
+		assertTrue(r.getTuples().size() == 8);
+		assertTrue(r.getDesc().getFieldName(0).equals("column1"));
+		assertTrue(r.getDesc().getFieldName(1).equals("column2"));
+	}
+
+
+
+	//YourUnitTest
+	@Test
+	public void UnitTest1() { //test GroupBy Without Aggregation
+		Query q = new Query("SELECT a1, a2 FROM A GROUP BY a1, a2");
+		Relation r = q.execute();
+
+		assertTrue(r.getTuples().size() == 8);
+		assertTrue(r.getDesc().getFieldName(0).equals("a1"));
+		assertTrue(r.getDesc().getFieldName(1).equals("a2"));
+	}
+
+
+	@Test
+	public void UnitTest2() {  // test GroupBy With Aggregation
+		Query q = new Query("SELECT a1, SUM(a2) AS sum_a2 FROM A GROUP BY a1");
+		Relation r = q.execute();
+
+		assertTrue(r.getTuples().size() > 0); // At least one group exists
+	}
+
+
+	@Test
+	public void UnitTest3() {  //test Empty Result Set
+		Query q = new Query("SELECT a1 FROM A WHERE a1 = 999");
+		Relation r = q.execute();
+
+		assertTrue(r.getTuples().isEmpty());
+	}
+
 }

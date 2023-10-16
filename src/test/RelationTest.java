@@ -95,7 +95,7 @@ public class RelationTest {
 		n.add("b1");
 		
 		ar = ar.rename(f, n);
-		
+
 		assertTrue(ar.getTuples().size() == 8);
 		assertTrue(ar.getDesc().getFieldName(0).equals("b1"));
 		assertTrue(ar.getDesc().getFieldName(1).equals("a2"));

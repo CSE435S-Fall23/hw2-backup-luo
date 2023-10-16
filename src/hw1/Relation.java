@@ -1,6 +1,9 @@
+//Jieping Luo
 package hw1;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 /**
  * This class provides methods to perform relational algebra operations. It will be used
@@ -15,6 +18,8 @@ public class Relation {
 	
 	public Relation(ArrayList<Tuple> l, TupleDesc td) {
 		//your code here
+		this.tuples = l;
+		this.td = td;
 	}
 	
 	/**
@@ -26,7 +31,15 @@ public class Relation {
 	 */
 	public Relation select(int field, RelationalOperator op, Field operand) {
 		//your code here
-		return null;
+		ArrayList<Tuple> list = new ArrayList<>();
+
+		for (Tuple t: this.tuples){
+			if(t.getField(field).compare(op, operand)){
+				list.add(t);
+			}
+		}
+
+		return new Relation(list, this.td);
 	}
 	
 	/**
@@ -37,7 +50,25 @@ public class Relation {
 	 */
 	public Relation rename(ArrayList<Integer> fields, ArrayList<String> names) {
 		//your code here
-		return null;
+		Type[] Types = new Type[this.td.numFields()];
+		String[] Fields = new String[this.td.numFields()];
+
+		for(int i = 0; i < this.td.numFields(); i++){
+			Types[i] = this.td.getType(i);
+			Fields[i] = this.td.getFieldName(i);
+		}
+
+		for(int i = 0; i < fields.size(); i++){
+			if(Arrays.asList(Fields).contains(names.get(i))){  //Check if each name in the "names" list is present in the "Fields" array
+				throw new IllegalArgumentException();
+			}
+
+			if(!names.get(i).equals("")){
+				Fields[fields.get(i)] = names.get(i); //update the "Fields" array based on the non-empty names in the "names" list
+			}
+		}
+
+		return new Relation(this.tuples, new TupleDesc(Types, Fields));
 	}
 	
 	/**
@@ -45,9 +76,45 @@ public class Relation {
 	 * @param fields a list of field numbers (refer to TupleDesc) that should be in the result
 	 * @return
 	 */
-	public Relation project(ArrayList<Integer> fields) {
+	public Relation project(ArrayList<Integer> fields){
 		//your code here
-		return null;
+		Type[] newTypes = new Type[fields.size()];
+		String[] newFields = new String[fields.size()];
+
+		TupleDesc newTD = new TupleDesc(newTypes, newFields);
+		ArrayList<Tuple> newList = new ArrayList<>();
+
+		for(int i = 0; i < fields.size(); i++){
+			try{
+//				if(fields.get(i) > td.numFields()-1){
+//					throw new IllegalAccessException();
+//				}
+				newTypes[i] = this.td.getType(fields.get(i));
+				newFields[i] = this.td.getFieldName(fields.get(i));
+			}
+			catch(NoSuchElementException e){
+				try {
+					throw new IllegalAccessException();
+				} catch (IllegalAccessException ex) {
+					throw new RuntimeException(ex);
+				}
+			}
+		}
+
+		if(newTD.getSize() == 0){
+			return new Relation(newList, newTD);
+		}
+
+
+		for(Tuple t: this.tuples){
+			Tuple tu = new Tuple(newTD);
+			for(int i = 0; i < fields.size(); i++){
+				tu.setField(i, t.getField(fields.get(i)));
+			}
+			newList.add(tu);
+		}
+
+		return new Relation(newList, newTD);
 	}
 	
 	/**
@@ -61,7 +128,38 @@ public class Relation {
 	 */
 	public Relation join(Relation other, int field1, int field2) {
 		//your code here
-		return null;
+		int numFields1 = this.td.numFields();
+		int numFields2 = other.td.numFields();
+		Type[] types = new Type[numFields1 + numFields2];
+		String[] fields = new String[numFields1 + numFields2];
+		ArrayList<Tuple> newList = new ArrayList<>();
+
+		for (int i = 0; i < numFields1; i++){
+			fields[i] = this.td.getFieldName(i);
+			types[i] = this.td.getType(i);
+		}
+
+		for (int j = 0; j < numFields2; j++){
+			fields[j + numFields1] = other.td.getFieldName(j);
+			types[j + numFields1] = other.td.getType(j);
+		}
+
+		for(int i = 0; i < this.tuples.size(); i++){
+			for(int j = 0; j < other.tuples.size(); j++){
+				if(this.tuples.get(i).getField(field1).equals(other.tuples.get(j).getField(field2))){
+					Tuple t = new Tuple(new TupleDesc(types, fields));
+					for(int k = 0; k < this.getDesc().numFields(); k++){
+						t.setField(k, this.getTuples().get(i).getField(k));
+					}
+					for(int l = 0; l < other.getDesc().numFields(); l++){
+						t.setField(l + this.getDesc().numFields(), other.getTuples().get(j).getField(l));
+					}
+					newList.add(t);
+				}
+			}
+		}
+
+		return new Relation(newList, new TupleDesc(types, fields));
 	}
 	
 	/**
@@ -72,17 +170,22 @@ public class Relation {
 	 */
 	public Relation aggregate(AggregateOperator op, boolean groupBy) {
 		//your code here
-		return null;
+		Aggregator agg = new Aggregator(op, groupBy, this.td);
+
+		for(Tuple t: tuples){
+			agg.merge(t);
+		}
+		return new Relation(agg.getResults(), this.td);
 	}
 	
 	public TupleDesc getDesc() {
 		//your code here
-		return null;
+		return this.td;
 	}
 	
 	public ArrayList<Tuple> getTuples() {
 		//your code here
-		return null;
+		return this.tuples;
 	}
 	
 	/**
@@ -91,6 +194,21 @@ public class Relation {
 	 */
 	public String toString() {
 		//your code here
-		return null;
+		StringBuilder s = new StringBuilder(this.td.toString() + '\n');
+
+		for(Tuple t: this.tuples){
+			s.append(t.toString()).append('\n');
+		}
+
+//		for(int i = 0; i < this.tuples.size();i++){
+//			s += this.tuples.get(i).toString() + '\n';
+//		}
+
+//		for(Tuple t: this.tuples){
+//			s += t.toString() + '\n';
+//		}
+
+		return s.toString();
 	}
+
 }

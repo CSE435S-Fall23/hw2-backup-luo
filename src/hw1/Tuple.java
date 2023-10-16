@@ -10,31 +10,40 @@ import java.util.HashMap;
  *
  */
 public class Tuple {
-	
+
 	/**
 	 * Creates a new tuple with the given description
 	 * @param t the schema for this tuple
 	 */
+
+	private TupleDesc tupleDesc;
+	private int pageId;
+	private int slotId;
+	private Field[] fields;
+
 	public Tuple(TupleDesc t) {
 		//your code here
+		this.tupleDesc = t;
+		this.fields = new Field[t.numFields()];
 	}
-	
+
 	public TupleDesc getDesc() {
 		//your code here
-		return null;
+		return this.tupleDesc;
 	}
-	
+
 	/**
 	 * retrieves the page id where this tuple is stored
 	 * @return the page id of this tuple
 	 */
 	public int getPid() {
 		//your code here
-		return 0;
+		return this.pageId;
 	}
 
 	public void setPid(int pid) {
 		//your code here
+		this.pageId = pid;
 	}
 
 	/**
@@ -43,17 +52,20 @@ public class Tuple {
 	 */
 	public int getId() {
 		//your code here
-		return 0;
+		return this.slotId;
 	}
 
 	public void setId(int id) {
 		//your code here
+		this.slotId = id;
 	}
-	
+
 	public void setDesc(TupleDesc td) {
 		//your code here;
+		this.tupleDesc = td;
+
 	}
-	
+
 	/**
 	 * Stores the given data at the i-th field
 	 * @param i the field number to store the data
@@ -61,13 +73,14 @@ public class Tuple {
 	 */
 	public void setField(int i, Field v) {
 		//your code here
+		this.fields[i] = v;
 	}
-	
+
 	public Field getField(int i) {
 		//your code here
-		return null;
+		return this.fields[i];
 	}
-	
+
 	/**
 	 * Creates a string representation of this tuple that displays its contents.
 	 * You should convert the binary data into a readable format (i.e. display the ints in base-10 and convert
@@ -75,7 +88,11 @@ public class Tuple {
 	 */
 	public String toString() {
 		//your code here
-		return "";
+		String str = "";
+		for(int i = 0; i < this.fields.length; i++) {
+			str += this.fields[i].toString() + ", ";
+		}
+		return str;
 	}
 }
 	
